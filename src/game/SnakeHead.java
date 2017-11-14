@@ -63,6 +63,17 @@ public class SnakeHead extends Block{
         if(SnakeBlocks!=null) SnakeBlocks.add(new Block(APosX, APosY,GetRandomColor()));
     }
     
+      public Block RemoveBlock(){
+          Block LastBlock = null;
+        if(SnakeBlocks!=null){
+            LastBlock = SnakeBlocks.get(SnakeBlocks.size()-1);
+            SnakeBlocks.remove(LastBlock);
+        }
+        
+        return LastBlock;
+    }
+    
+    
         
     public void AddBlock(int APosX, int APosY, Color Color){
         if(SnakeBlocks!=null) SnakeBlocks.add(new Block(APosX, APosY,Color));

@@ -64,11 +64,14 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
     
     private int DirX = 0;
     private int DirY = 0;
+    private int Game = 0;
     private float RotateX, RotateY, RotateZ;
     
     //Variável relacionada a matriz de controle da posição dos blocos.
     
-     private int [] [] IntBlocks = new int [20][20]; 
+     private int [] [] IntBlocks = new int [20][20];
+     
+     //private Color Colors[] = {new Color(255,8,127), new Color(213,100,124), new Color(67,142,280)};
      
      public Snake(){
          GLJPanel canvas = new GLJPanel();
@@ -80,7 +83,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         frame.setVisible(true);
 
         //Instantiating and Initiating Animator 
-        final FPSAnimator animator = new FPSAnimator(canvas, 15, true);
+        final FPSAnimator animator = new FPSAnimator(canvas, 10, true);
         FPSAnimator = animator;
         animator.start();
 
@@ -101,7 +104,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
                 IsTimerUp = true;
                           }         
            
-        }, 10000, 10000);
+        }, 10000, 25000);
 
         new Snake();
     }
@@ -252,7 +255,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
      
      private void DrawSquare(Color AColor) {
         // define a cor da face
-        GL.glColor3f(AColor.getRed(), AColor.getGreen(), AColor.getBlue());
+        GL.glColor3f(AColor.getRed()/255f, AColor.getGreen()/255f, AColor.getBlue()/255f);
 
         // desenha o quadrado
         GL.glBegin(GL2.GL_QUADS);
@@ -283,9 +286,21 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
     
     private void InitializeIntBlocks(Object[] Params){
         
-        if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 1)
+        if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 1 || SnakeHead.getSnakeBlocks().size() == 1)
         {   
             InGame = false;
+        }
+        else if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 3){
+            if(Score>0){
+                 Score--;
+            }
+            
+                 Block LastBlock = SnakeHead.RemoveBlock();
+                 if(LastBlock!=null){
+                     IntBlocks[LastBlock.getPosX()][LastBlock.getPosY()] = 0;
+                 }
+               
+            
         }
         else if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]==4){
 
@@ -294,10 +309,13 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
             int _y = Integer.parseInt(Params[1].toString());
             
             
-            SnakeHead.AddBlock(_x, _y);
+            SnakeHead.AddBlock(_x, _y, Color.BLUE);
             
             IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] = 0;
             Score++;
+            if(Score%4 == 0){
+                RestartAnimator(FPSAnimator.getFPS()+2);
+            }
         }
         else
             IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] = 5;
@@ -317,10 +335,30 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         }       
     }
     
+    
+    public void RenderGameScreen(String Text, Color Color, String Type){
+        
+          GL.glClearDepth(1.0f);
+        GL.glEnable(GL_DEPTH_TEST);
+        GL.glDepthFunc(GL_LEQUAL);
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        //GL.glClearColor(1,1,1,1);
+        GL.glLoadIdentity();
+        GL.glTranslated(-10, 5, -40);
+        
+        DrawText(Text,40,Color,220,450);
+        if(Type.equals("Lose")){
+         DrawText("Score: " + Score,40,Color.BLUE,300,400);
+
+        }
+        DrawText("Pressione ENTER para reiniciar.",40,Color.YELLOW,40,350);
+
+    }
+    
        
-    private void RestartAnimator(){
+    private void RestartAnimator(int fps){
         FPSAnimator.stop(); 
-        FPSAnimator.setFPS(FPSAnimator.getFPS()+5); 
+        FPSAnimator.setFPS(fps); 
         FPSAnimator.start();
     }
     private void RenderScreen(int[][] IntBlocks) {
@@ -330,12 +368,9 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         GL.glEnable(GL_DEPTH_TEST);
         GL.glDepthFunc(GL_LEQUAL);
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-        GL.glClearColor(1,1,1,1);
+        //GL.glClearColor(1,1,1,1);
         GL.glLoadIdentity();
-        GL.glTranslated(-10, 5, -30);
-        
-        
-
+        GL.glTranslated(-10, 5, -40);
         RotateX = 45;
         RotateY = 0;
         RotateZ = 0;
@@ -346,6 +381,8 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         InitializeIntBlocks(Params);
         if(IsTimerUp){
             DrawFood(2);
+            DrawLooseScore(2);
+            DrawRandomWall(5);
             IsTimerUp = false;
         }
     
@@ -356,7 +393,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
                      if(IntBlocks[i][j] == 1){                    
                          GL.glPushMatrix();
                              GL.glTranslated(0, 1, 0);
-                             DrawCube(Color.MAGENTA);
+                             DrawCube(new Color(255,0,72));
                          GL.glPopMatrix();
                      }
                      else if(IntBlocks[i][j] == 5){
@@ -368,11 +405,17 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
                      else if(IntBlocks[i][j]==4){
                          GL.glPushMatrix();
                              GL.glTranslated(0, 1, 0);
-                             DrawCube(Color.RED);
+                             DrawCube(Color.GREEN);
+                         GL.glPopMatrix();
+                     }
+                     else if(IntBlocks[i][j] == 3){
+                          GL.glPushMatrix();
+                             GL.glTranslated(0, 1, 0);
+                             DrawCube(new Color(254,90,18));
                          GL.glPopMatrix();
                      }
                      else {
-                        DrawCube(Color.orange);
+                        DrawCube(Color.YELLOW);
                      }
 
                      GL.glTranslated(0, 0, 1);
@@ -384,22 +427,46 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         
         if(!InGame)
         {
-            InitializeGame();
+              GL.glClearDepth(1.0f);
+        GL.glEnable(GL_DEPTH_TEST);
+        GL.glDepthFunc(GL_LEQUAL);
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+        //GL.glClearColor(1,1,1,1);
+        GL.glLoadIdentity();
+        GL.glTranslated(-10, 5, -40);
+        RenderGameScreen("VOCÊ PERDEU!!!", Color.RED, "Lose");
+            
+        if(Game == 1){
+            Game = 0;
+             InitializeGame();
             InGame = true;
             DirX=0;
             DirY=0;
             Score = 0;
+        }          
+            
         }
         else{
              if(DirX != 0) SnakeHead.setPosX(SnakeHead.getPosX() + DirX);
             if(DirY != 0) SnakeHead.setPosY(SnakeHead.getPosY() + DirY);
             DrawText("SCORE: ",40, Color.ORANGE,20,650);
-            DrawText(Integer.toString(Score),40, Color.ORANGE,180,650);
-
+            DrawText(Integer.toString(Score),40, Color.ORANGE,180,650);         
+            DrawMenu();
             
-           
         }
         
+    }
+    
+    private void DrawMenu(){
+        
+        DrawText("•", 80, Color.GREEN, 100, 35);
+        DrawText("Comida",30, Color.WHITE,140,55);
+        DrawText("•", 80, new Color(255,0,72), 270, 35);
+        DrawText("Parede",30, Color.WHITE,300,55);
+        DrawText("•", 80,new Color(254,90,18) , 420, 35);
+        DrawText("Dano",30, Color.WHITE,450,55);
+
+         
     }
       
     private int[] GenerateRandomPosition(int [][] Blocks){
@@ -414,7 +481,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
             x_Position = Random.nextInt(BoardSize-1);
             y_Position = Random.nextInt(BoardSize-1);
             
-            if(Blocks[x_Position][y_Position] == 5 || Blocks[x_Position][y_Position] == 1)
+            if(Blocks[x_Position][y_Position] == 5 || Blocks[x_Position][y_Position] == 1 || Blocks[x_Position][y_Position] == 3 || Blocks[x_Position][y_Position] == 4)
                 IsPossible = false;
             else{
                 _Positions[0] = x_Position;
@@ -430,29 +497,13 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
     
     public void DrawRandomWall(int size){
         
-        int _Draw = 0;
-        
-        while(size != _Draw){
+       for(int i = 0; i<size;i++){
             
-            int[] _positions =  GenerateRandomPosition(IntBlocks);
-        int _x = _positions[0];
-        int _y = _positions[1];
-        //IntBlocks[_x][_y] = 1;
-
-        for(int i = _x; i<BoardSize;i++){
-            for(int j = _y; j<BoardSize; j++){
-                
-                if(IntBlocks[i][j] == 1){
-                    _Draw++;
-                }
-                if(_Draw == size){
-                 
-                    break;
-                }                
-            }
-        }
+            int _i = GenerateRandomPosition(IntBlocks)[0];
+            int _j = GenerateRandomPosition(IntBlocks)[1];
+            IntBlocks[_i][_j] = 1;
             
-        }       
+        }     
         
     }
     
@@ -468,6 +519,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
          
     }
     
+     
     
     public void DrawFood(int FoodCount){
         
@@ -481,34 +533,57 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         
     }
     
+        public void DrawLooseScore(int LooseScore){
+        
+        for(int i = 0; i<LooseScore;i++){
+            
+            int _i = GenerateRandomPosition(IntBlocks)[0];
+            int _j = GenerateRandomPosition(IntBlocks)[1];
+            IntBlocks[_i][_j] = 3;
+            
+        }
+        
+    }
+    
     
     
     public void InitializeGame(){
         
         Timer = new Timer();
         
-        
+        RestartAnimator(10);
         IntBlocks = new int[BoardSize][BoardSize];
         DrawWalls();   
-        //DrawRandomWall(2);
-        DrawFood(5);  
-        
-            
+        DrawFood(5);
+        DrawRandomWall(2);
         SnakeHead = new SnakeHead();
         SnakeHead.SnakeBlocks = new ArrayList();
         
         SnakeHead.setPosX(5);
         SnakeHead.setPosY(1);
         
-        SnakeHead.AddBlock(4, 1, Color.BLACK);
-        SnakeHead.AddBlock(5, 1, Color.MAGENTA);
+        SnakeHead.AddBlock(4, 1, new Color(228,0,25));
+        SnakeHead.AddBlock(5, 1, Color.BLUE);
+    }
+    
+    public void PutLight(){
+         float luzAmbiente[]  ={0.2f,0.2f,0.2f,1.0f};
+    float luzDifusa[]    ={1.0f,1.0f,1.0f,1.0f};	   // "cor"
+    float luzEspecular[] ={1.0f, 1.0f, 1.0f, 1.0f};// "brilho"
+    float posicaoLuz[]   ={0.0f, 50.0f, 50.0f, 1.0f};
+    
+    GL.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, luzAmbiente,0);
+        
+             // Define os par�metros da luz de n�mero 0
+	GL.glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT,  luzAmbiente,0); 
+        GL.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE,  luzDifusa  ,0 );
+	GL.glLightfv(GL2.GL_LIGHT1, GL2.GL_SPECULAR, luzEspecular,0 );
+	GL.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, posicaoLuz,0 );
     }
     
     @Override
     public void init(GLAutoDrawable glad) {
         InitializeGame();
-        
-        
     }
 
     @Override
@@ -533,7 +608,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         GL = glad.getGL().getGL2();
         GL.glMatrixMode(GL2.GL_PROJECTION);
         GL.glLoadIdentity();
-        Glu.gluPerspective(60, 1, 1, 30);
+        Glu.gluPerspective(60, 1, 1, 60);
         GL.glMatrixMode(GL2.GL_MODELVIEW);
         GL.glLoadIdentity();
         GL.glTranslated(0, 0, -5);
@@ -575,6 +650,12 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         {
             DirY = 1;
             DirX = 0;
+        }
+        
+        if(key == KeyEvent.VK_ENTER){
+            DirY = 0;
+            DirX = 0;
+            Game = 1;
         }
             
     }
