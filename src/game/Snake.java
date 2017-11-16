@@ -360,6 +360,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         FPSAnimator.stop(); 
         FPSAnimator.setFPS(fps); 
         FPSAnimator.start();
+       
     }
     private void RenderScreen(int[][] IntBlocks) {
 
@@ -368,7 +369,11 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         GL.glEnable(GL_DEPTH_TEST);
         GL.glDepthFunc(GL_LEQUAL);
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-        //GL.glClearColor(1,1,1,1);
+          GL.glEnable(GL2.GL_LIGHTING);  
+	GL.glEnable(GL2.GL_LIGHT0);
+	GL.glEnable(GL2.GL_DEPTH_TEST);
+        GL.glEnable(GL2.GL_COLOR_MATERIAL);
+        
         GL.glLoadIdentity();
         GL.glTranslated(-10, 5, -40);
         RotateX = 45;
@@ -554,7 +559,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         RestartAnimator(10);
         IntBlocks = new int[BoardSize][BoardSize];
         DrawWalls();   
-        DrawFood(5);
+        DrawFood(3);
         DrawRandomWall(2);
         SnakeHead = new SnakeHead();
         SnakeHead.SnakeBlocks = new ArrayList();
@@ -567,23 +572,15 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
     }
     
     public void PutLight(){
-         float luzAmbiente[]  ={0.2f,0.2f,0.2f,1.0f};
-    float luzDifusa[]    ={1.0f,1.0f,1.0f,1.0f};	   // "cor"
-    float luzEspecular[] ={1.0f, 1.0f, 1.0f, 1.0f};// "brilho"
-    float posicaoLuz[]   ={0.0f, 50.0f, 50.0f, 1.0f};
-    
-    GL.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, luzAmbiente,0);
-        
-             // Define os par�metros da luz de n�mero 0
-	GL.glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT,  luzAmbiente,0); 
-        GL.glLightfv(GL2.GL_LIGHT1, GL2.GL_DIFFUSE,  luzDifusa  ,0 );
-	GL.glLightfv(GL2.GL_LIGHT1, GL2.GL_SPECULAR, luzEspecular,0 );
-	GL.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, posicaoLuz,0 );
+         
     }
     
     @Override
     public void init(GLAutoDrawable glad) {
+        
         InitializeGame();
+        
+       
     }
 
     @Override
