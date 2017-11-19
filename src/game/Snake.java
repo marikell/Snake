@@ -35,26 +35,26 @@ import javax.swing.JFrame;
 
 public class Snake extends GLJPanel implements GLEventListener, KeyListener {
 
+    //Parâmetros da Matriz
     private Object[] Params;
-    
-    private boolean CanRestartAnimator = true;
-    
+      
     private FPSAnimator FPSAnimator;
     
-    private int Score = 0;
+    //Classe Jogo
+    private Game Game;
         
     private static Timer Timer = new Timer();
     private static boolean IsTimerUp = false;
     
     //Variáveis relacionadas ao jogo em si
     
-    private SnakeHead SnakeHead;
     private GLU Glu = new GLU();
     private GL2 GL;
-    private final int BoardSize=20;
 
+    //Variável que determina se está em jogo ou não
     private boolean InGame = true;
   
+    private int VerifyGame;
     //Variáveis relacionadas as posições
     
       private int PosX = -15;
@@ -64,16 +64,10 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
     
     private int DirX = 0;
     private int DirY = 0;
-    private int Game = 0;
     private float RotateX, RotateY, RotateZ;
     
-    //Variável relacionada a matriz de controle da posição dos blocos.
-    
-     private int [] [] IntBlocks = new int [20][20];
-     
-     //private Color Colors[] = {new Color(255,8,127), new Color(213,100,124), new Color(67,142,280)};
-     
      public Snake(){
+         Game = new Game();
          GLJPanel canvas = new GLJPanel();
         canvas.addGLEventListener(this);
 
@@ -82,7 +76,6 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         frame.getContentPane().add(canvas);
         frame.setVisible(true);
 
-        //Instantiating and Initiating Animator 
         final FPSAnimator animator = new FPSAnimator(canvas, 10, true);
         FPSAnimator = animator;
         animator.start();
@@ -107,15 +100,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         }, 10000, 25000);
 
         new Snake();
-    }
-     
-     public void setIntBlocks(int[][] IntBlocks){
-         this.IntBlocks = IntBlocks;
-     }
-     
-     public int [][] getIntBlocks(){
-         return IntBlocks;
-     }
+    } 
      
      public boolean getInGame(){
          return InGame;
@@ -132,13 +117,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
      public GLU getGlu(){
          return Glu;
      }
-    public void setSnakeHead(SnakeHead SnakeHead){
-        this.SnakeHead = SnakeHead;
-    }
     
-    public SnakeHead getSnakeHead(){
-        return SnakeHead;
-    }
       public void setGL(GL2 GL){
         this.GL = GL;
     }
@@ -200,23 +179,22 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
          return RotateZ;
      }
 
+     //Método responsável por rotacional a tela de acordo com as variáveis setadas lá em cima.
       private void RotateScreen() {
         GL.glRotatef(RotateZ, 0, 0, 1);
         GL.glRotatef(RotateY, 0, 1, 0);
         GL.glRotatef(RotateX, 1, 0, 0);
-    }
-      
-      private void DrawText(String Text, int FontSize, Color Color, int PosX, int PosY){
-          
+    }      
+      //Método que renderiza um texto na tela.
+      private void DrawText(String Text, int FontSize, Color Color, int PosX, int PosY){          
         TextRenderer TextRenderer = new TextRenderer(new Font("Arial", Font.BOLD, FontSize));
         TextRenderer.beginRendering(700, 700);
         TextRenderer.setColor(Color);
         TextRenderer.setSmoothing(true);
-
         TextRenderer.draw(Text, PosX, PosY);
         TextRenderer.endRendering();
       }
-      
+      //Método que desenha um cubo de determinada cor.
      private void DrawCube(Color AColor) {
         
         GL.glPushMatrix();
@@ -276,44 +254,42 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
        private Block GetSnakeBlock(int APosX, int APosY){
        
       
-       for(Block item : SnakeHead.getSnakeBlocks()){
+       for(Block item : Game.getSnakeHead().getSnakeBlocks()){
            if(item.getPosX() == APosX && item.getPosY() == APosY)
                return item;
        }
        return null;
    }
        
-    
-    private void InitializeIntBlocks(Object[] Params){
+         private void InitializeIntBlocks(Object[] Params){
         
+             int[][] IntBlocks = Game.getIntBlocks();
+             SnakeHead SnakeHead = Game.getSnakeHead();
+             
         if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 1 || SnakeHead.getSnakeBlocks().size() == 1)
         {   
             InGame = false;
         }
         else if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 3){
-            if(Score>0){
-                 Score--;
-            }
-            
-                 Block LastBlock = SnakeHead.RemoveBlock();
-                 if(LastBlock!=null){
+            if(Game.getScore()>0){
+                 Game.setScore(Game.getScore()-1);
+            }            
+            Block LastBlock = SnakeHead.RemoveBlock();
+            if(LastBlock!=null){
                      IntBlocks[LastBlock.getPosX()][LastBlock.getPosY()] = 0;
                  }
                
             
         }
         else if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]==4){
-
-            //Direita
             int _x = Integer.parseInt(Params[0].toString());
-            int _y = Integer.parseInt(Params[1].toString());
-            
+            int _y = Integer.parseInt(Params[1].toString());            
             
             SnakeHead.AddBlock(_x, _y, Color.BLUE);
             
             IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] = 0;
-            Score++;
-            if(Score%4 == 0){
+            Game.setScore(Game.getScore()+1);
+            if(Game.getScore()%4 == 0){
                 RestartAnimator(FPSAnimator.getFPS()+2);
             }
         }
@@ -334,6 +310,9 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         IntBlocks[SnakeHead.getSnakeBlocks().get(i).getPosX()][SnakeHead.getSnakeBlocks().get(i).getPosY()] = 5;
         }       
     }
+       
+    
+    
     
     
     public void RenderGameScreen(String Text, Color Color, String Type){
@@ -348,7 +327,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         
         DrawText(Text,40,Color,220,450);
         if(Type.equals("Lose")){
-         DrawText("Score: " + Score,40,Color.BLUE,300,400);
+         DrawText("Score: " + Game.getScore(),40,Color.BLUE,300,400);
 
         }
         DrawText("Pressione ENTER para reiniciar.",40,Color.YELLOW,40,350);
@@ -364,6 +343,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
     }
     private void RenderScreen(int[][] IntBlocks) {
 
+        SnakeHead SnakeHead = Game.getSnakeHead();
         // Inicializa o Depth Buffer 
         GL.glClearDepth(1.0f);
         GL.glEnable(GL_DEPTH_TEST);
@@ -385,16 +365,16 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         Params[1] = SnakeHead.getLastBlock().getPosY();
         InitializeIntBlocks(Params);
         if(IsTimerUp){
-            DrawFood(2);
-            DrawLooseScore(2);
-            DrawRandomWall(5);
+            Game.DrawFood(2);
+            Game.DrawLooseScore(2);
+            Game.DrawRandomWall(5);
             IsTimerUp = false;
         }
     
         // desenha chão
         GL.glPushMatrix();
-            for (int i = 0; i < BoardSize; i++) {
-                for (int j = 0; j < BoardSize; j++) {
+            for (int i = 0; i < Game.getBoardSize(); i++) {
+                for (int j = 0; j < Game.getBoardSize(); j++) {
                      if(IntBlocks[i][j] == 1){                    
                          GL.glPushMatrix();
                              GL.glTranslated(0, 1, 0);
@@ -432,22 +412,21 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         
         if(!InGame)
         {
-              GL.glClearDepth(1.0f);
+        GL.glClearDepth(1.0f);
         GL.glEnable(GL_DEPTH_TEST);
         GL.glDepthFunc(GL_LEQUAL);
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-        //GL.glClearColor(1,1,1,1);
         GL.glLoadIdentity();
         GL.glTranslated(-10, 5, -40);
         RenderGameScreen("VOCÊ PERDEU!!!", Color.RED, "Lose");
             
-        if(Game == 1){
-            Game = 0;
-             InitializeGame();
+        if(VerifyGame == 1){
+            VerifyGame = 0;
+            Game = new Game();
+             Game.InitializeGame(Timer);             
             InGame = true;
             DirX=0;
             DirY=0;
-            Score = 0;
         }          
             
         }
@@ -455,13 +434,11 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
              if(DirX != 0) SnakeHead.setPosX(SnakeHead.getPosX() + DirX);
             if(DirY != 0) SnakeHead.setPosY(SnakeHead.getPosY() + DirY);
             DrawText("SCORE: ",40, Color.ORANGE,20,650);
-            DrawText(Integer.toString(Score),40, Color.ORANGE,180,650);         
-            DrawMenu();
-            
+            DrawText(Integer.toString(Game.getScore()),40, Color.ORANGE,180,650);         
+            DrawMenu();            
         }
         
     }
-    
     private void DrawMenu(){
         
         DrawText("•", 80, Color.GREEN, 100, 35);
@@ -474,113 +451,9 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
          
     }
       
-    private int[] GenerateRandomPosition(int [][] Blocks){
-        
-        Random Random = new Random();
-        int x_Position = -1;
-        int y_Position = -1;
-        boolean IsPossible = false;
-        int [] _Positions = new int[2];
-        
-        while(!IsPossible){
-            x_Position = Random.nextInt(BoardSize-1);
-            y_Position = Random.nextInt(BoardSize-1);
-            
-            if(Blocks[x_Position][y_Position] == 5 || Blocks[x_Position][y_Position] == 1 || Blocks[x_Position][y_Position] == 3 || Blocks[x_Position][y_Position] == 4)
-                IsPossible = false;
-            else{
-                _Positions[0] = x_Position;
-                _Positions[1] = y_Position;
-                IsPossible = true;
-            }           
-           
-        }
-        
-        return _Positions;
-        
-    }
-    
-    public void DrawRandomWall(int size){
-        
-       for(int i = 0; i<size;i++){
-            
-            int _i = GenerateRandomPosition(IntBlocks)[0];
-            int _j = GenerateRandomPosition(IntBlocks)[1];
-            IntBlocks[_i][_j] = 1;
-            
-        }     
-        
-    }
-    
-    
-    public void DrawWalls(){
-         for(int i = 0; i<BoardSize;i++){
-            for(int j = 0; j<BoardSize;j++){
-                if(i==0 || j == 0 || i== BoardSize-1 || j==BoardSize-1){
-                    IntBlocks[i][j] = 1;
-                }
-            }
-    }
-         
-    }
-    
-     
-    
-    public void DrawFood(int FoodCount){
-        
-        for(int i = 0; i<FoodCount;i++){
-            
-            int _i = GenerateRandomPosition(IntBlocks)[0];
-            int _j = GenerateRandomPosition(IntBlocks)[1];
-            IntBlocks[_i][_j] = 4;
-            
-        }
-        
-    }
-    
-        public void DrawLooseScore(int LooseScore){
-        
-        for(int i = 0; i<LooseScore;i++){
-            
-            int _i = GenerateRandomPosition(IntBlocks)[0];
-            int _j = GenerateRandomPosition(IntBlocks)[1];
-            IntBlocks[_i][_j] = 3;
-            
-        }
-        
-    }
-    
-    
-    
-    public void InitializeGame(){
-        
-        Timer = new Timer();
-        
-        RestartAnimator(10);
-        IntBlocks = new int[BoardSize][BoardSize];
-        DrawWalls();   
-        DrawFood(3);
-        DrawRandomWall(2);
-        SnakeHead = new SnakeHead();
-        SnakeHead.SnakeBlocks = new ArrayList();
-        
-        SnakeHead.setPosX(5);
-        SnakeHead.setPosY(1);
-        
-        SnakeHead.AddBlock(4, 1, new Color(228,0,25));
-        SnakeHead.AddBlock(5, 1, Color.BLUE);
-    }
-    
-    public void PutLight(){
-         
-    }
-    
     @Override
-    public void init(GLAutoDrawable glad) {
-        
-        InitializeGame();
-        
-       
+    public void init(GLAutoDrawable glad) {        
+        Game.InitializeGame(Timer);
     }
 
     @Override
@@ -593,7 +466,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
             
         GL = glad.getGL().getGL2();
 
-        RenderScreen(IntBlocks);
+        RenderScreen(Game.getIntBlocks());
         
         PosX += DirX;
         PosY += DirY;
@@ -652,7 +525,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         if(key == KeyEvent.VK_ENTER){
             DirY = 0;
             DirX = 0;
-            Game = 1;
+            VerifyGame = 1;
         }
             
     }
