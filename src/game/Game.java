@@ -43,8 +43,14 @@ public class Game {
         SnakeHead.setPosX(5);
         SnakeHead.setPosY(1);
         
+        IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] = 8;
+        
+        SnakeHead.setColor(Color.BLUE);
         SnakeHead.AddBlock(4, 1, new Color(228,0,25));
-        SnakeHead.AddBlock(5, 1, Color.BLUE);
+        //SnakeHead.AddBlock(5, 1, Color.BLUE);
+        
+        IntBlocks[4][1] = 5;
+        IntBlocks[5][1] = 8;
     }
     
       public void DrawFood(int FoodCount){

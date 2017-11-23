@@ -35,7 +35,7 @@ import javax.swing.JFrame;
 
 public class Snake extends GLJPanel implements GLEventListener, KeyListener {
 
-    //Parâmetros da Matriz
+    //ParÃ¢metros da Matriz
     private Object[] Params;
       
     private FPSAnimator FPSAnimator;
@@ -46,21 +46,21 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
     private static Timer Timer = new Timer();
     private static boolean IsTimerUp = false;
     
-    //Variáveis relacionadas ao jogo em si
+    //VariÃ¡veis relacionadas ao jogo em si
     
     private GLU Glu = new GLU();
     private GL2 GL;
 
-    //Variável que determina se está em jogo ou não
+    //VariÃ¡vel que determina se estÃ¡ em jogo ou nÃ£o
     private boolean InGame = true;
   
     private int VerifyGame;
-    //Variáveis relacionadas as posições
+    //VariÃ¡veis relacionadas as posiÃ§Ãµes
     
       private int PosX = -15;
       private int PosY = 0;
     
-    //Variáveis relacionadas ao controle no teclado
+    //VariÃ¡veis relacionadas ao controle no teclado
     
     private int DirX = 0;
     private int DirY = 0;
@@ -76,7 +76,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         frame.getContentPane().add(canvas);
         frame.setVisible(true);
 
-        final FPSAnimator animator = new FPSAnimator(canvas, 10, true);
+        final FPSAnimator animator = new FPSAnimator(canvas, 8, true);
         FPSAnimator = animator;
         animator.start();
 
@@ -179,13 +179,13 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
          return RotateZ;
      }
 
-     //Método responsável por rotacional a tela de acordo com as variáveis setadas lá em cima.
+     //MÃ©todo responsÃ¡vel por rotacional a tela de acordo com as variÃ¡veis setadas lÃ¡ em cima.
       private void RotateScreen() {
         GL.glRotatef(RotateZ, 0, 0, 1);
         GL.glRotatef(RotateY, 0, 1, 0);
         GL.glRotatef(RotateX, 1, 0, 0);
     }      
-      //Método que renderiza um texto na tela.
+      //MÃ©todo que renderiza um texto na tela.
       private void DrawText(String Text, int FontSize, Color Color, int PosX, int PosY){          
         TextRenderer TextRenderer = new TextRenderer(new Font("Arial", Font.BOLD, FontSize));
         TextRenderer.beginRendering(700, 700);
@@ -194,7 +194,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         TextRenderer.draw(Text, PosX, PosY);
         TextRenderer.endRendering();
       }
-      //Método que desenha um cubo de determinada cor.
+      //MÃ©todo que desenha um cubo de determinada cor.
      private void DrawCube(Color AColor) {
         
         GL.glPushMatrix();
@@ -266,8 +266,11 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
              int[][] IntBlocks = Game.getIntBlocks();
              SnakeHead SnakeHead = Game.getSnakeHead();
              
-        if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 1 || SnakeHead.getSnakeBlocks().size() == 1)
+        if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 1 || SnakeHead.getSnakeBlocks().size() == 0)
         {   
+            InGame = false;
+        }
+        else if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] == 5){
             InGame = false;
         }
         else if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 3){
@@ -290,21 +293,22 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
             IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] = 0;
             Game.setScore(Game.getScore()+1);
             if(Game.getScore()%4 == 0){
-                RestartAnimator(FPSAnimator.getFPS()+2);
+                RestartAnimator(FPSAnimator.getFPS()+1);
             }
         }
-        else
+        else if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] != 8)
             IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] = 5;
         
         for(int i = 0; i<20;i++){
             for(int j = 0; j < 20;j++){
                 
-                if(IntBlocks[i][j] == 5){
+                if(IntBlocks[i][j] == 5 || IntBlocks[i][j] == 8){
                     IntBlocks[i][j] = 0;
                 }
                 
             }
         }
+        IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] = 8;
         for(int i = 0; i<SnakeHead.getSnakeBlocks().size(); i++){
             
         IntBlocks[SnakeHead.getSnakeBlocks().get(i).getPosX()][SnakeHead.getSnakeBlocks().get(i).getPosY()] = 5;
@@ -371,7 +375,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
             IsTimerUp = false;
         }
     
-        // desenha chão
+        // desenha chÃ£o
         GL.glPushMatrix();
             for (int i = 0; i < Game.getBoardSize(); i++) {
                 for (int j = 0; j < Game.getBoardSize(); j++) {
@@ -384,7 +388,14 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
                      else if(IntBlocks[i][j] == 5){
                           GL.glPushMatrix();
                              GL.glTranslated(0, 1, 0);
-                             DrawCube(GetSnakeBlock(i, j).getColor());
+                             Block Block = GetSnakeBlock(i,j);
+                             DrawCube(Block.getColor());
+                         GL.glPopMatrix();
+                     }
+                     else if(IntBlocks[i][j] == 8){
+                         GL.glPushMatrix();
+                             GL.glTranslated(0, 1, 0);
+                             DrawCube(SnakeHead.getColor());
                          GL.glPopMatrix();
                      }
                      else if(IntBlocks[i][j]==4){
@@ -427,6 +438,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
             InGame = true;
             DirX=0;
             DirY=0;
+            RestartAnimator(8);
         }          
             
         }
@@ -441,12 +453,12 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
     }
     private void DrawMenu(){
         
-        DrawText("•", 80, Color.GREEN, 100, 35);
-        DrawText("Comida",30, Color.WHITE,140,55);
-        DrawText("•", 80, new Color(255,0,72), 270, 35);
-        DrawText("Parede",30, Color.WHITE,300,55);
-        DrawText("•", 80,new Color(254,90,18) , 420, 35);
-        DrawText("Dano",30, Color.WHITE,450,55);
+        DrawText("●", 50, Color.GREEN, 100, 35);
+        DrawText("Comida",30, Color.WHITE,140,35);
+        DrawText("●", 50, new Color(255,0,72), 270, 35);
+        DrawText("Parede",30, Color.WHITE,300,35);
+        DrawText("●", 50,new Color(254,90,18) , 420, 35);
+        DrawText("Dano",30, Color.WHITE,450,35);
 
          
     }
