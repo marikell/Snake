@@ -35,6 +35,8 @@ import javax.swing.JFrame;
 
 public class Snake extends GLJPanel implements GLEventListener, KeyListener {
 
+    private boolean IsDirX = false;
+    private boolean IsDirY = false;
     //ParÃ¢metros da Matriz
     private Object[] Params;
       
@@ -76,7 +78,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         frame.getContentPane().add(canvas);
         frame.setVisible(true);
 
-        final FPSAnimator animator = new FPSAnimator(canvas, 8, true);
+        final FPSAnimator animator = new FPSAnimator(canvas, 7, true);
         FPSAnimator = animator;
         animator.start();
 
@@ -97,7 +99,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
                 IsTimerUp = true;
                           }         
            
-        }, 10000, 25000);
+        }, 20000, 25000);
 
         new Snake();
     } 
@@ -265,8 +267,10 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         
              int[][] IntBlocks = Game.getIntBlocks();
              SnakeHead SnakeHead = Game.getSnakeHead();
-             
-        if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 1 || SnakeHead.getSnakeBlocks().size() == 0)
+         if(SnakeHead.getSnakeBlocks().isEmpty()){
+             InGame = false;
+         }    
+         else if(IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()]== 1)
         {   
             InGame = false;
         }
@@ -281,6 +285,9 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
             if(LastBlock!=null){
                      IntBlocks[LastBlock.getPosX()][LastBlock.getPosY()] = 0;
                  }
+            
+            if(SnakeHead.getSnakeBlocks().isEmpty())
+                InGame = false;
                
             
         }
@@ -288,7 +295,7 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
             int _x = Integer.parseInt(Params[0].toString());
             int _y = Integer.parseInt(Params[1].toString());            
             
-            SnakeHead.AddBlock(_x, _y, Color.BLUE);
+            SnakeHead.AddBlock(_x, _y, new Color(228,0,25));
             
             IntBlocks[SnakeHead.getPosX()][SnakeHead.getPosY()] = 0;
             Game.setScore(Game.getScore()+1);
@@ -438,7 +445,9 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
             InGame = true;
             DirX=0;
             DirY=0;
-            RestartAnimator(8);
+            IsDirX = false;
+            IsDirY = false;
+            RestartAnimator(7);
         }          
             
         }
@@ -512,32 +521,52 @@ public class Snake extends GLJPanel implements GLEventListener, KeyListener {
         
         if(key == KeyEvent.VK_RIGHT)
         { 
+            if(IsDirX)
+                return;
+            IsDirX = true;
+            IsDirY = false;
             DirX = 1;
             DirY = 0;
         }
         
         if(key == KeyEvent.VK_LEFT)
         {
+            if(IsDirX)
+                return;
+             IsDirX = true;
+            IsDirY = false;
             DirY = 0;
             DirX = -1;
         }
         
         if(key == KeyEvent.VK_UP)
         {
+             if(IsDirY)
+                return;
+             IsDirX = false;
+            IsDirY = true;
             DirY = -1;
             DirX = 0;
         }
         
         if(key == KeyEvent.VK_DOWN)
         {
+            if(IsDirY)
+                return;
+             IsDirX = false;
+            IsDirY = true;
             DirY = 1;
             DirX = 0;
         }
         
         if(key == KeyEvent.VK_ENTER){
+            //if(!InGame){
+            if(InGame)
+                return;
             DirY = 0;
             DirX = 0;
             VerifyGame = 1;
+            //}
         }
             
     }

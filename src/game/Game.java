@@ -30,12 +30,10 @@ public class Game {
     }
     
     public void InitializeGame(Timer Timer){
-        Timer = new Timer();
-        
-        //RestartAnimator(10);
+        Timer = new Timer();       
         IntBlocks = new int[BoardSize][BoardSize];
         DrawWalls();   
-        DrawFood(3);
+        DrawFood(5);
         DrawRandomWall(2);
         SnakeHead = new SnakeHead();
         SnakeHead.SnakeBlocks = new ArrayList();
